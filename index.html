@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Cartique — Admin Panel</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}" />
+
+</head>
+<body>
+
+  <!-- ================== LOGIN VIEW ================== -->
+  <section id="view-login" class="view centered">
+    <div class="card max-w-sm">
+      <div class="brand-title">Cartique Admin</div>
+      <p class="muted">Sign in to manage the store</p>
+      <form id="login-form" class="mt-4">
+        <!-- Username -->
+        <label>Username
+          <input class="input" type="text" id="login-username" placeholder="admin" required />
+        </label>
+        <!-- Password -->
+        <label>Password
+          <input class="input" type="password" id="login-password" placeholder="••••••••" required />
+        </label>
+        <!-- Submit -->
+        <button class="btn brand w-full" type="submit">Login</button>
+        <!-- Error message -->
+        <p id="login-error" class="error mt-2 hidden">Invalid credentials.</p>
+      </form>
+    </div>
+  </section>
+
+  <!-- ================== MAIN APP SHELL ================== -->
+  <div id="app-shell" class="hidden">
+    
+    <!-- ========== SIDEBAR NAVIGATION ========== -->
+    <aside class="sidebar">
+      <div class="logo">🧵 Cartique <span class="badge">Admin</span></div>
+      <nav>
+        <!-- Default active nav item -->
+        <button class="nav-link active" data-target="dashboard">Dashboard</button>
+        
+        <div class="nav-section">Management</div>
+        <button class="nav-link" data-target="products">Manage Products</button>
+        <button class="nav-link" data-target="orders">Manage Orders</button>
+        <button class="nav-link" data-target="customers">Manage Customers</button>
+        <button class="nav-link" data-target="sellers">Manage Sellers</button>
+        
+        <div class="nav-section">Insights & Docs</div>
+        <button class="nav-link" data-target="reports">Sales Reports</button>
+        <button class="nav-link" data-target="analytics">Advanced Analytics</button>
+        <button class="nav-link" data-target="returns">Returns & Refunds</button>
+        <button class="nav-link" data-target="bills">Bills</button>
+        
+        <div class="grow"></div>
+        <button id="btn-logout" class="nav-link danger">Logout</button>
+      </nav>
+    </aside>
+
+    <!-- ========== MAIN CONTENT AREA ========== -->
+    <main class="main">
+
+      <!-- ======= TOPBAR ======= -->
+      <header class="topbar">
+        <div class="top-title" id="top-title">Dashboard</div>
+        <div class="top-actions">
+          <!-- Global search -->
+          <input id="global-search" class="input" placeholder="Global search (products, customers, orders)" />
+        </div>
+      </header>
+
+      <!-- ================== DASHBOARD VIEW ================== -->
+      <section id="view-dashboard" class="view">
+        <!-- Performance Metrics -->
+        <div class="grid-4">
+          <div class="stat"><div class="stat-title">Total Products</div><div class="stat-value" id="stat-products">0</div></div>
+          <div class="stat"><div class="stat-title">Total Orders</div><div class="stat-value" id="stat-orders">0</div></div>
+          <div class="stat"><div class="stat-title">Total Revenue</div><div class="stat-value" id="stat-revenue">₹0</div></div>
+          <div class="stat"><div class="stat-title">Conversion Rate</div><div class="stat-value" id="stat-conversion">0%</div></div>
+        </div>
+
+        <!-- Quick Stats -->
+        <div class="grid-4 mt-4">
+          <div class="stat">
+            <div class="stat-title">Today's Orders</div>
+            <div class="stat-value" id="stat-orders-today">0</div>
+          </div>
+          <div class="stat">
+            <div class="stat-title">Today's Revenue</div>
+            <div class="stat-value" id="stat-revenue-today">₹0</div>
+          </div>
+          <div class="stat">
+            <div class="stat-title">Total Customers</div>
+            <div class="stat-value" id="stat-total-customers">0</div>
+          </div>
+          <div class="stat">
+            <div class="stat-title">Active Sellers</div>
+            <div class="stat-value" id="stat-total-sellers">0</div>
+          </div>
+        </div>
+
+        <!-- Charts & Analytics -->
+        <div class="cards mt-4">
+          <div class="card">
+            <div class="card-title">Monthly Sales</div>
+            <canvas id="sales-chart" height="140"></canvas>
+          </div>
+          <div class="card">
+            <div class="card-title">Sales by Category</div>
+            <canvas id="category-chart" height="140"></canvas>
+          </div>
+          <div class="card">
+            <div class="card-title">Best Sellers</div>
+            <ul id="best-sellers" class="list"></ul>
+          </div>
+          <div class="card">
+            <div class="card-title">Top Customers</div>
+            <ul id="top-customers" class="list"></ul>
+          </div>
+        </div>
+
+        <!-- Pending Orders & Revenue Summary -->
+        <div class="grid-2 mt-4">
+          <div class="card">
+            <div class="card-title">
+              Pending Orders 
+              <span class="badge" id="pending-orders-count">0</span>
+            </div>
+            <div id="pending-orders-list" class="pending-orders-list" style="max-height: 300px; overflow-y: auto;">
+              <div class="text-center text-gray-500">Loading...</div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-title">Revenue Summary</div>
+            <div id="revenue-summary" style="max-height: 300px; overflow-y: auto;">
+              <div class="text-center text-gray-500">Loading...</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Additional Dashboard Features -->
+        <div class="grid-2 mt-4">
+          <div class="card">
+            <div class="card-title">Recent Orders</div>
+            <div id="recent-orders-list" style="max-height: 300px; overflow-y: auto;">
+              <div class="text-center text-gray-500">Loading...</div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-title">Low Stock Alerts</div>
+            <div id="low-stock-alerts-list">
+              <div class="text-center text-gray-500">Loading...</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================== PRODUCTS VIEW ================== -->
+      <section id="view-products" class="view hidden">
+        <!-- Toolbar for filters, search, add -->
+        <div class="toolbar">
+          <div class="left">
+            <input id="product-search" class="input" placeholder="Search products..." />
+            <select id="product-filter-category"></select>
+            <select id="product-sort">
+              <option value="name-asc">Sort: Name (A-Z)</option>
+              <option value="name-desc">Sort: Name (Z-A)</option>
+              <option value="price-asc">Sort: Price (Low to High)</option>
+              <option value="price-desc">Sort: Price (High to Low)</option>
+              <option value="stock-asc">Sort: Stock (Low to High)</option>
+              <option value="stock-desc">Sort: Stock (High to Low)</option>
+              <option value="category">Sort: Category</option>
+            </select>
+          </div>
+          <div class="right">
+            <button id="btn-new-product" class="btn brand">+ New Product</button>
+          </div>
+        </div>
+        <!-- Products table -->
+        <div class="table-wrap">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Name</th><th>Category</th><th>Price</th><th>Stock</th><th>Seller</th><th></th>
+              </tr>
+            </thead>
+            <tbody id="products-tbody"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- ================== ORDERS VIEW ================== -->
+      <section id="view-orders" class="view hidden">
+        <!-- Filter by order status -->
+        <div class="toolbar">
+          <div class="left">
+            <select id="order-filter-status">
+              <option value="all">All Statuses</option>
+              <option value="Pending">Pending</option>
+              <option value="Shipped">Shipped</option>
+              <option value="Delivered">Delivered</option>
+              <option value="Cancelled">Cancelled</option>
+            </select>
+          </div>
+        </div>
+        <!-- Orders table -->
+        <div class="table-wrap">
+          <table class="table">
+            <thead>
+              <tr><th>#</th><th>Date</th><th>Customer</th><th>Status</th><th>Amount</th><th></th></tr>
+            </thead>
+            <tbody id="orders-tbody"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- ================== CUSTOMERS VIEW ================== -->
+      <section id="view-customers" class="view hidden">
+        <!-- Customer search -->
+        <div class="toolbar">
+          <div class="left">
+            <input id="customer-search" class="input" placeholder="Search customers..." />
+          </div>
+        </div>
+        <!-- Customers table -->
+        <div class="table-wrap">
+          <table class="table">
+            <thead>
+              <tr><th>Name</th><th>Email</th><th>Phone</th><th>Status</th><th>Orders</th><th></th></tr>
+            </thead>
+            <tbody id="customers-tbody"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- ================== SELLERS VIEW ================== -->
+      <section id="view-sellers" class="view hidden">
+        <!-- Add new seller button -->
+        <div class="toolbar">
+          <div class="left"></div>
+          <div class="right">
+            <button id="btn-new-seller" class="btn brand">+ New Seller</button>
+          </div>
+        </div>
+        <!-- Sellers table -->
+        <div class="table-wrap">
+          <table class="table">
+            <thead>
+              <tr><th>Name</th><th>Company</th><th>Contact</th><th></th></tr>
+            </thead>
+            <tbody id="sellers-tbody"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- ================== REPORTS VIEW ================== -->
+      <section id="view-reports" class="view hidden">
+        <div class="cards">
+          <!-- Revenue report -->
+          <div class="card">
+            <div class="card-title">Revenue Report (Select Period)</div>
+            <div class="row">
+              <input type="month" id="report-from" class="input" />
+              <input type="month" id="report-to" class="input" />
+              <button id="btn-run-report" class="btn brand">Generate Report</button>
+            </div>
+            <div class="grid-3 mt-2">
+              <div class="stat">
+                <div class="stat-title">Total Revenue</div>
+                <div class="stat-value" id="report-revenue">₹0</div>
+              </div>
+              <div class="stat">
+                <div class="stat-title">Total Orders</div>
+                <div class="stat-value" id="report-orders-count">0</div>
+              </div>
+              <div class="stat">
+                <div class="stat-title">Avg Order Value</div>
+                <div class="stat-value" id="report-avg-order">₹0</div>
+              </div>
+            </div>
+          </div>
+          <!-- Monthly trend chart -->
+          <div class="card">
+            <div class="card-title">Monthly Revenue Trend</div>
+            <canvas id="report-chart" height="180"></canvas>
+          </div>
+          <!-- Sales by Category -->
+          <div class="card">
+            <div class="card-title">Sales by Category</div>
+            <canvas id="report-category-chart" height="180"></canvas>
+          </div>
+          <!-- Best selling products -->
+          <div class="card">
+            <div class="card-title">Best-Selling Products</div>
+            <ol id="report-best" class="list"></ol>
+          </div>
+          <!-- Daily Sales -->
+          <div class="card">
+            <div class="card-title">Daily Sales (Last 30 Days)</div>
+            <canvas id="report-daily-chart" height="180"></canvas>
+          </div>
+          <!-- Top Customers in Period -->
+          <div class="card">
+            <div class="card-title">Top Customers (Period)</div>
+            <div id="report-top-customers" class="list"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================== BILLS VIEW ================== -->
+      <section id="view-bills" class="view hidden">
+        <!-- Bills table -->
+        <div class="table-wrap">
+          <table class="table">
+            <thead>
+              <tr><th>Bill #</th><th>Order #</th><th>Date</th><th>Amount</th><th></th></tr>
+            </thead>
+            <tbody id="bills-tbody"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- ================== ANALYTICS VIEW ================== -->
+      <section id="view-analytics" class="view hidden">
+        <div class="cards">
+          <!-- Sales Forecast -->
+          <div class="card">
+            <div class="card-title">Sales Forecast (12 Months)</div>
+            <canvas id="forecast-chart" height="200"></canvas>
+          </div>
+          <!-- Customer Behavior -->
+          <div class="card">
+            <div class="card-title">Customer Behavior Analysis</div>
+            <canvas id="behavior-chart" height="200"></canvas>
+          </div>
+          <!-- Category Performance -->
+          <div class="card">
+            <div class="card-title">Category Performance</div>
+            <canvas id="category-performance-chart" height="200"></canvas>
+          </div>
+          <!-- Product Performance -->
+          <div class="card">
+            <div class="card-title">Top Performing Products</div>
+            <div id="product-performance" class="performance-list" style="max-height: 300px; overflow-y: auto;"></div>
+          </div>
+          <!-- Shipping Status Overview -->
+          <div class="card">
+            <div class="card-title">Shipping Status Overview</div>
+            <div id="shipping-status-overview" class="segments-list" style="max-height: 300px; overflow-y: auto;"></div>
+          </div>
+          <!-- Revenue Trends -->
+          <div class="card">
+            <div class="card-title">Revenue Trends Comparison</div>
+            <canvas id="revenue-trends-chart" height="200"></canvas>
+          </div>
+          <!-- Order Status Distribution -->
+          <div class="card">
+            <div class="card-title">Order Status Distribution</div>
+            <canvas id="order-status-chart" height="200"></canvas>
+          </div>
+          <!-- Customer Lifetime Value -->
+          <div class="card">
+            <div class="card-title">Customer Lifetime Value Analysis</div>
+            <div id="customer-ltv" style="max-height: 300px; overflow-y: auto;"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================== RETURNS VIEW ================== -->
+      <section id="view-returns" class="view hidden">
+        <!-- Add new return button -->
+        <div class="toolbar">
+          <div class="left">
+            <select id="return-filter-status">
+              <option value="all">All Statuses</option>
+              <option value="Requested">Requested</option>
+              <option value="Approved">Approved</option>
+              <option value="Rejected">Rejected</option>
+              <option value="Refunded">Refunded</option>
+            </select>
+          </div>
+          <div class="right">
+            <button id="btn-new-return" class="btn brand">+ New Return</button>
+          </div>
+        </div>
+        <!-- Returns table -->
+        <div class="table-wrap">
+          <table class="table">
+            <thead>
+              <tr><th>Return ID</th><th>Order ID</th><th>Customer</th><th>Product</th><th>Reason</th><th>Status</th><th>Amount</th><th></th></tr>
+            </thead>
+            <tbody id="returns-tbody"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- ================== MODALS ================== -->
+      <!-- Product modal -->
+      <dialog id="modal-product" class="modal">
+        <form id="product-form" method="dialog" class="card">
+          <div class="card-title" id="product-form-title">New Product</div>
+          <input type="hidden" id="product-id" />
+          <!-- Product form fields -->
+          <div class="grid-2">
+            <label>Name<input class="input" id="product-name" required /></label>
+            <label>Category<input class="input" id="product-category" list="category-list" required /></label>
+            <label>Price<input class="input" id="product-price" type="number" min="0" step="0.01" required /></label>
+            <label>Stock<input class="input" id="product-stock" type="number" min="0" required /></label>
+            <label>Seller<select class="input" id="product-seller"></select></label>
+            <label>Image URL<input class="input" id="product-image" placeholder="https://..." /></label>
+          </div>
+          <!-- Modal actions -->
+          <menu class="modal-actions">
+            <button class="btn ghost" onclick="this.closest('dialog').close()">Cancel</button>
+            <button id="product-save" class="btn brand" value="default">Save</button>
+          </menu>
+        </form>
+      </dialog>
+
+      <!-- Seller modal -->
+      <dialog id="modal-seller" class="modal">
+        <form id="seller-form" method="dialog" class="card">
+          <div class="card-title" id="seller-form-title">New Seller</div>
+          <input type="hidden" id="seller-id" />
+          <div class="grid-2">
+            <label>Name<input class="input" id="seller-name" required /></label>
+            <label>Company<input class="input" id="seller-company" required /></label>
+            <label>Contact Email<input class="input" id="seller-email" type="email" required /></label>
+            <label>Contact Phone<input class="input" id="seller-phone" required /></label>
+          </div>
+          <menu class="modal-actions">
+            <button class="btn ghost" onclick="this.closest('dialog').close()">Cancel</button>
+            <button id="seller-save" class="btn brand" value="default">Save</button>
+          </menu>
+        </form>
+      </dialog>
+
+      <!-- Order modal -->
+      <dialog id="modal-order" class="modal">
+        <div class="card">
+          <div class="card-title">Order Details</div>
+          <div id="order-details" class="mt-2"></div>
+          <menu class="modal-actions">
+            <button class="btn" id="order-print">Print/Export PDF</button>
+            <button class="btn ghost" onclick="this.closest('dialog').close()">Close</button>
+          </menu>
+        </div>
+      </dialog>
+
+    </main>
+  </div>
+
+  <!-- ================== DATALIST FOR AUTOCOMPLETE ================== -->
+  <datalist id="category-list"></datalist>
+
+  <!-- ================== ROW TEMPLATES (for dynamic data) ================== -->
+  <template id="tpl-product-row">
+    <tr>
+      <td class="name"></td>
+      <td class="category"></td>
+      <td class="price"></td>
+      <td class="stock"></td>
+      <td class="seller"></td>
+      <td class="row-actions">
+        <button class="btn small" data-action="edit">Edit</button>
+        <button class="btn small danger" data-action="delete">Delete</button>
+      </td>
+    </tr>
+  </template>
+
+  <template id="tpl-order-row">
+    <tr>
+      <td class="id"></td>
+      <td class="date"></td>
+      <td class="customer"></td>
+      <td class="status"></td>
+      <td class="amount"></td>
+      <td class="row-actions">
+        <button class="btn small" data-action="view">View</button>
+      </td>
+    </tr>
+  </template>
+
+  <template id="tpl-customer-row">
+    <tr>
+      <td class="name"></td>
+      <td class="email"></td>
+      <td class="phone"></td>
+      <td class="status"></td>
+      <td class="orders"></td>
+      <td class="row-actions">
+        <button class="btn small warn" data-action="toggle">Block/Unblock</button>
+        <button class="btn small" data-action="history">History</button>
+      </td>
+    </tr>
+  </template>
+
+  <template id="tpl-seller-row">
+    <tr>
+      <td class="name"></td>
+      <td class="company"></td>
+      <td class="contact"></td>
+      <td class="row-actions">
+        <button class="btn small" data-action="edit">Edit</button>
+        <button class="btn small danger" data-action="delete">Delete</button>
+      </td>
+    </tr>
+  </template>
+
+  <!-- ================== SCRIPT ================== -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="{{ url_for('static', filename='app.js') }}"></script>
+</body>
+</html>
+
